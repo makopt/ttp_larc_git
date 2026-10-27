@@ -1,0 +1,10 @@
+# created by the setup scripts
+external/
+bin/
+data/instances/
+data/*-ttp/
+# new runs and the Numba cache
+runs/
+__pycache__/
+*.pyc
+.DS_Store

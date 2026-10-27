@@ -1,0 +1,62 @@
+diff -ru a/include/concorde.h b/include/concorde.h
+--- a/include/concorde.h	2026-10-09 00:26:42
++++ b/include/concorde.h	2026-10-09 00:26:42
+@@ -228,7 +228,7 @@
+ # include <unistd.h>
+ #endif
+ #ifdef HAVE_MALLOC_H
+-# include <malloc.h>
++# include <stdlib.h>
+ #endif
+ #ifdef HAVE_SYS_TYPES_H
+ # include <sys/types.h>
+diff -ru a/main.cpp b/main.cpp
+--- a/main.cpp	2026-10-09 00:26:42
++++ b/main.cpp	2026-10-09 00:26:42
+@@ -20,10 +20,15 @@
+ 
+ using namespace std;
+ 
++int coco_seed_offset = 0;
++
+ int main(int argc, char** argv) {
+     
+     double startWallTime = get_wall_time();
+-    srand(time(0));
++    // LARC patch: optional 4th argument = run seed. CoCo keeps its own time-based seeding; the seed is only added as an
++    // offset so that runs started in the same second (parallel jobs) do not share the same random sequence.
++    if (argc>=5) coco_seed_offset = atoi(argv[4]) * 7919;
++    srand(time(0) + coco_seed_offset);
+ 
+     if (argc<2) {
+         cout<<"Usage: CoCo instance_name [timeout(in seconds) [algorithm_number(1,2,3 or 4)]]"<<endl<<endl;
+@@ -41,7 +46,7 @@
+         timeLimit = atoi(argv[2]);
+     else
+         timeLimit = 600;  
+-    if (argc==4)
++    if (argc>=4)
+         algorithm = atoi(argv[3]);
+     else
+         algorithm = 4;    
+diff -ru a/src/CLKSolver.cpp b/src/CLKSolver.cpp
+--- a/src/CLKSolver.cpp	2026-10-09 00:26:42
++++ b/src/CLKSolver.cpp	2026-10-09 00:26:42
+@@ -38,6 +38,8 @@
+         CC_SWAP (cyc[i - 1], cyc[k], temp);
+     }
+ }
++extern int coco_seed_offset;
++
+ CLKSolver::CLKSolver() 
+ {
+     norm = CC_EUCLIDEAN;
+@@ -62,7 +64,7 @@
+     //rval = print_command (ac, av);
+     //CCcheck_rval (rval, "print_command failed");
+ 
+-    seed = (int) CCutil_real_zeit ();
++    seed = (int) CCutil_real_zeit () + coco_seed_offset;     // LARC patch: per-run offset (see main.cpp)
+ 
+     CCutil_sprand (seed, &rstate);
+ 

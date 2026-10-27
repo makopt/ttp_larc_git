@@ -1,0 +1,7 @@
+# Versions used for the paper (Python 3.13). pytest is only needed to run the tests with pytest.
+numpy==2.3.3
+numba==0.68.0
+scipy==1.16.2
+pandas==2.3.3
+openpyxl==3.1.5
+matplotlib==3.10.6
