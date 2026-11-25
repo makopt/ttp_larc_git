@@ -8,7 +8,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNS_DIR = Path(os.environ.get("LARC_RUNS_DIR", REPO_ROOT / "runs"))
-os.environ.setdefault("NUMBA_CACHE_DIR", str(RUNS_DIR / "numba_cache"))   # must be set before numba is imported
+# must be set before numba is imported; the kernels compiled without the second-order term (LARC_SECOND=0, see
+# ablation.py) have their own cache
+_cache = "numba_cache" if os.environ.get("LARC_SECOND", "1") != "0" else "numba_cache_no_second_order"
+os.environ.setdefault("NUMBA_CACHE_DIR", str(RUNS_DIR / _cache))
 
 DATA_DIR = REPO_ROOT / "data"
 INSTANCES_DIR = DATA_DIR / "instances"                 # JSON instances, created by scripts/setup/prepare_instances.py

@@ -1,4 +1,4 @@
-"""Convergence statistics of the runs of LARC (Section 5.3, Table 7 and Figure 16), computed from the traces: per run,
+"""Convergence statistics of the runs of LARC (Section 5.4, Table 10 and Figure 15), computed from the traces: per run,
 the time of the last improvement and the first times within 1% and 0.1% of the final value; per size group, the medians
 and the quartiles of the gap to the final value at each second; and, at each second, the share of instances on which
 the mean best value of LARC so far exceeds the mean final value of CoCo+.

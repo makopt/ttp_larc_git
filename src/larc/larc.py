@@ -7,7 +7,7 @@ import time
 
 import numpy as np
 
-from . import construct, trace
+from . import ablation, construct, trace
 from .instance import LeanTTP
 from .recombination import recombine
 from .search import State, knn_lists, local_search, macro_search
@@ -28,8 +28,8 @@ def solve_larc(inst: LeanTTP, time_limit: float, seed: int = 1, k_race: int = 4,
       1. Sampling (Algorithm 6). Each candidate is a chained Lin-Kernighan tour with the load-aware constructor packing.
          Instances with at most noise_max_n cities: tours on coordinates perturbed by Gaussian noise of standard
          deviation tour_noise[i % 4] times the mean nearest-neighbour distance, a coordinated local search capped at
-         share_min * T / k_min, and a sampling end measured from the share rho of searches that converge
-         (share_min + (share_max - share_min) * rho, or share_tours if rho < 0.5). Larger instances: plain tours, a probe
+         share_min * T / k_min, and a sampling end measured from the share phi of searches that converge
+         (share_min + (share_max - share_min) * phi, or share_tours if phi < 0.5). Larger instances: plain tours, a probe
          search of min(probe_max, max(probe_min, probe_per_city * n)) seconds per tour, and a sampling end at
          share_tours * T. Sampling also stops at k_target candidates.
       2. Race (Algorithm 7) of the k_race best candidates by successive halving until race_end * T; candidates of rank
@@ -40,6 +40,8 @@ def solve_larc(inst: LeanTTP, time_limit: float, seed: int = 1, k_race: int = 4,
       5. Final knapsack repack (Algorithm 3) in the last final_kp * T, kept only if better, then local search.
     Returns (state, info): the best solution found and a dictionary of run statistics."""
     kw = {**DEFAULTS, **kw}
+    if not ablation.RACE:                                   # ablation: no race, the best candidate gets the race time
+        k_race = 1
     t0 = time.monotonic()
     el = lambda: time.monotonic() - t0
     nbr = knn_lists(inst, 10)
@@ -55,13 +57,13 @@ def solve_larc(inst: LeanTTP, time_limit: float, seed: int = 1, k_race: int = 4,
     while len(cands) < k_target:
         if sample_stall and len(cands) >= 2 * k_min and len(cands) - s_last >= max(k_min, len(cands) // 2):
             break
-        rho = n_conv / n_ls if n_ls else 0.0
+        phi = n_conv / n_ls if n_ls else 0.0
         if large:
             stop = share_tours * time_limit
-        elif n_ls >= n_probe and rho < 0.5:                    # searches hit their cap: many constructor-scored tours
+        elif n_ls >= n_probe and phi < 0.5:                    # searches hit their cap: many constructor-scored tours
             stop = share_tours * time_limit
         else:
-            stop = (share_min + (share_max - share_min) * rho) * time_limit
+            stop = (share_min + (share_max - share_min) * phi) * time_limit
         if cands and el() + 1.3 * per > stop:
             break
         ts = time.monotonic()

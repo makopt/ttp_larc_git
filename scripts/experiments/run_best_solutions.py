@@ -1,4 +1,4 @@
-"""Section 5.2: runs LARC again (600 s, as in the main runs) with the best seed of each instance where the best of its
+"""Section 5.3: runs LARC again (600 s, as in the main runs) with the best seed of each instance where the best of its
 10 main runs reaches or exceeds every published value of the six methods that use the benchmark distances (CoCo+, CoCo,
 RWS, SAVI, S5 and MATLS), and saves the final solution. A run stops on wall-clock time, so it does not repeat the main
 run exactly; the value of the new run is the one reported.

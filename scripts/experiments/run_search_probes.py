@@ -1,7 +1,7 @@
 """Experiments on the coordinated local search (Algorithms 4 and 5 of the paper), each from chained Lin-Kernighan tours
 and the constructor of LARC:
 
-  coordinated_2opt   Section 5.6, Table 9: damping f and maximum number of passes P_max of the coordinated 2-opt, one
+  coordinated_2opt   Section 5.8, Table 13: damping f and maximum number of passes P_max of the coordinated 2-opt, one
                      changed at a time from f = 0.25, P_max = 40; 2 tours on each of 8 instances; value after 30, 60
                      and 120 s.
   first_pass_screen  Section 3.3.3: the coordinated 2-opt with and without the first-pass screen; 2 tours on each of
@@ -11,6 +11,10 @@ and the constructor of LARC:
   probe_screening    Section 3.5.1 and Figure 9: constructor value and values after a probe of 0.5 s and 2 s more, for
                      many tours of one instance (d2103 with 320 tours: --tours 40 --seeds 1-8; rl11849 with 40 tours:
                      --tours 5 --seeds 1-8).
+  probe_screening_large
+                     Section 3.5.1 and Figure 9c: the same measurement on every instance with more than 1,500 cities, with the
+                     probe length of LARC, p = min(10, max(0.5, 2.5e-4 n)) s, followed by 3p s more (as 0.5 + 1.5 s on
+                     d2103 and 3 + 9 s on rl11849); --tours 5 --seeds 1-8 gives 40 candidates per instance.
   start_tours_noise  Table 4: 30 tours per noise level (0, 0.1, 0.25, 0.5 and 1 times the mean nearest-neighbour
                      distance) on 6 instances, constructor value and value after a short search (2 s on instances with
                      at most 159 cities, 5 s on the others).
@@ -29,12 +33,12 @@ from common import RUNS_DIR, run_jobs, seeds, select_instances
 
 ap = argparse.ArgumentParser()
 ap.add_argument("experiment", choices=["coordinated_2opt", "first_pass_screen", "race_probe", "probe_screening",
-                                       "start_tours_noise"])
+                                       "probe_screening_large", "start_tours_noise"])
 ap.add_argument("--workers", type=int, default=8)
 ap.add_argument("--names", default="", help="only these instances of the list of the experiment (names separated by commas)")
 ap.add_argument("--instance", default="d2103_n10510_uncorr-similar-weights_05", help="probe_screening only")
-ap.add_argument("--tours", type=int, default=40, help="probe_screening only: tours per seed")
-ap.add_argument("--seeds", default="1-8", help="probe_screening only")
+ap.add_argument("--tours", type=int, default=40, help="probe_screening and probe_screening_large: tours per seed")
+ap.add_argument("--seeds", default="1-8", help="probe_screening and probe_screening_large")
 A = ap.parse_args()
 
 COORD = [(0.25, 40), (0.1, 40), (0.5, 40), (1.0, 40), (0.25, 10), (0.25, 20), (0.25, 80)]   # (damping f, P_max)
@@ -128,6 +132,32 @@ def run_probe(job):
     return dict(instance=name, worker=seed, tours=A.tours, _trace=rows)
 
 
+def run_probe_large(job):
+    """Like run_probe, with the probe length p of LARC for the instance and a longer search of 3p more."""
+    name, seed = job
+    from larc import benchmark, construct, tours
+    from larc.search import State, knn_lists, local_search
+    inst = benchmark.load_instance(name)
+    nbr = knn_lists(inst, 10)
+    kicks = max(10, int((1.0 if inst.n <= 2000 else 0.3) * inst.n))
+    probe = min(10.0, max(0.5, 2.5e-4 * inst.n))
+    rows = []
+    for i in range(A.tours):
+        t0 = time.monotonic()
+        tour, _ = tours.linkern_tour(inst, time_limit=150, seed=seed * 1000 + i, kicks=kicks, init=i % 5)
+        t1 = time.monotonic()
+        b = construct.build(inst, tour, mode="la", polish=True)
+        t2 = time.monotonic()
+        st = State(inst, b.tour, b.picked, nbr)
+        local_search(st, time_limit=probe, max_seg=inst.n, slice_moves=50, coord=True)
+        vp = st.value()
+        local_search(st, time_limit=3 * probe, max_seg=inst.n, slice_moves=50, coord=True)
+        rows.append(dict(instance=name, worker=seed, candidate=i, starting_cycle=i % 5, probe_s=probe,
+                         constructor_value=b.objective, value_after_probe=vp, value_after_longer_search=st.value(),
+                         tour_time_s=t1 - t0, constructor_time_s=t2 - t1))
+    return dict(instance=name, worker=seed, tours=A.tours, probe_s=probe, _trace=rows)
+
+
 def run_noise(job):
     name, = job
     from scipy.spatial import cKDTree
@@ -172,6 +202,13 @@ if __name__ == "__main__":
     elif A.experiment == "probe_screening":
         jobs = [(A.instance, s) for s in seeds(A.seeds)]
         run_jobs(run_probe, jobs, RUNS_DIR / f"probe_screening_{A.instance}.xlsx", ("instance", "worker"), A.workers,
+                 lambda r: f"{r['instance']} worker {r['worker']}")
+    elif A.experiment == "probe_screening_large":
+        from larc import benchmark
+        large = {r["instance"] for r in benchmark.instance_list() if int(r["n_cities"]) > 1500}
+        names = [n for n in select_instances("", A.names) if n in large]
+        jobs = [(n, s) for n in names for s in seeds(A.seeds)]
+        run_jobs(run_probe_large, jobs, out, ("instance", "worker"), A.workers,
                  lambda r: f"{r['instance']} worker {r['worker']}")
     else:
         jobs = [(n,) for n in select_instances("start_tours_noise", A.names)]

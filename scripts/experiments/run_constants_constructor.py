@@ -1,5 +1,5 @@
 """Constants of the constructor (Algorithm 2 of the paper) on the 60 instances, one cached chained Lin-Kernighan tour per
-TSP base, as in run_constructor_versions.py (Section 5.6, Table 9). One constant changed at a time from the values of
+TSP base, as in run_constructor_versions.py (Section 5.8, Table 13). One constant changed at a time from the values of
 LARC:
   rounds of the load-aware key                3 -> 1, 2, 5
   core half-width h of the knapsack repack    150 -> 50, 100, 300, 600

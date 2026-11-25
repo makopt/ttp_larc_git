@@ -13,6 +13,7 @@ import numpy as np
 
 from .evaluator import city_weights, objective
 from .instance import LeanTTP
+from .ablation import SECOND   # 1.0 in LARC; 0.0 drops the second-order term (ablation of the paper)
 
 CHI_GRID = (0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8)
 import os as _os
@@ -48,7 +49,7 @@ def item_keys(inst: LeanTTP, tour: np.ndarray, mode: str, picked: Optional[np.nd
     if mode == "la":
         c = np.zeros(inst.n) if picked is None else np.cumsum(city_weights(inst, picked)[tour])
         v = np.maximum(inst.v_max - nu * c, inst.v_min)
-        g1, g2 = _suffix(d / v ** 2), _suffix(d / v ** 3)
+        g1, g2 = _suffix(d / v ** 2), SECOND * _suffix(d / v ** 3)
         return dens - R * (nu * g1[k] + inst.weight * nu ** 2 * g2[k])
     raise ValueError(mode)
 
@@ -132,7 +133,7 @@ def flip_search(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, max_pass: i
     wtot = inst.weight[picked].sum()
     for _ in range(max_pass):
         v = np.maximum(vmax - nu * load, vmin)
-        g1, g2 = _suffix(d / v ** 2), _suffix(d / v ** 3)
+        g1, g2 = _suffix(d / v ** 2), SECOND * _suffix(d / v ** 3)
         k = ipos
         cost_add = R * (nu * inst.weight * g1[k] + (nu * inst.weight) ** 2 * g2[k])
         save_rem = R * (nu * inst.weight * g1[k] - (nu * inst.weight) ** 2 * g2[k])
@@ -179,7 +180,7 @@ def kp_repack(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, core: int = 1
     for _ in range(rounds):
         load = np.cumsum(city_weights(inst, cur)[tour])
         v = np.maximum(vmax - nu * load, vmin)
-        g1, g2 = _suffix(d / v ** 2), _suffix(d / v ** 3)
+        g1, g2 = _suffix(d / v ** 2), SECOND * _suffix(d / v ** 3)
         nw = nu * w
         cost = np.where(cur, R * (nw * g1[ipos] - nw ** 2 * g2[ipos]), R * (nw * g1[ipos] + nw ** 2 * g2[ipos]))
         a = inst.profit - cost

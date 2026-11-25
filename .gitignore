@@ -3,6 +3,8 @@ external/
 bin/
 data/instances/
 data/*-ttp/
+data/heldout/
+data/instances_heldout/
 # new runs and the Numba cache
 runs/
 __pycache__/

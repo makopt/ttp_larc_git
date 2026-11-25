@@ -15,9 +15,13 @@ from larc import RUNS_DIR, benchmark  # noqa: E402,F401
 
 def select_instances(list_name: str = "", names: str = "", largest_first: bool = True):
     """Names of the instances to run: a list of the sheet experiment_lists of data/benchmark_instances.xlsx (list_name),
-    or names separated by commas, or all 60 instances. Largest first by default, so that long jobs start early."""
-    inst = pd.DataFrame(benchmark.instance_list())
-    if list_name:
+    the 60 held-out instances (list_name "heldout"), or names separated by commas, or all 60 categorized instances.
+    Largest first by default, so that long jobs start early."""
+    if list_name == "heldout":
+        inst = pd.DataFrame(benchmark.heldout_list())
+    else:
+        inst = pd.DataFrame(benchmark.instance_list())
+    if list_name and list_name != "heldout":
         lists = pd.read_excel(benchmark.INSTANCE_LIST, sheet_name="experiment_lists")
         keep = lists[lists["list"] == list_name].instance
         if keep.empty:

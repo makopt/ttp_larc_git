@@ -1,4 +1,4 @@
-"""The configuration of LARC used in the grouped ablation of Section 5.4 of the paper."""
+"""The configuration of LARC used in the grouped ablation of Section 5.6 of the paper."""
 import time
 
 import numpy as np
@@ -14,7 +14,7 @@ from .tours import linkern_tour
 def solve_larc_base(inst: LeanTTP, time_limit: float, seed: int = 1, k_race: int = 4, share_min: float = 0.25,
                share_max: float = 0.8, k_target: int = 1000, k_min: int = 8, n_probe: int = 2, share_tours: float = 0.45, final_kp: float = 0.03, race_end: float = 0.75,
                xover_share: float = 0.1, log=None, **kw):
-    """LARC without perturbed tours, probe screening, double-bridge kicks and chunked final search (Section 5.4).
+    """LARC without perturbed tours, probe screening, double-bridge kicks and chunked final search (Section 5.6).
 
     Every candidate tour is a plain chained Lin-Kernighan tour, the measured sampling rule is used on every instance
     (so that on large instances most candidates are ranked by their constructor value), and the search after the
@@ -28,11 +28,11 @@ def solve_larc_base(inst: LeanTTP, time_limit: float, seed: int = 1, k_race: int
     ls_cap = share_min * time_limit / k_min
     cands, per, per_build, n_conv, n_ls = [], None, 0.0, 0, 0
     while len(cands) < k_target:
-        rho = n_conv / n_ls if n_ls else 0.0
-        if n_ls >= n_probe and rho < 0.5:                    # searches hit their cap: many constructor-scored tours
+        phi = n_conv / n_ls if n_ls else 0.0
+        if n_ls >= n_probe and phi < 0.5:                    # searches hit their cap: many constructor-scored tours
             stop = share_tours * time_limit
         else:
-            stop = (share_min + (share_max - share_min) * rho) * time_limit
+            stop = (share_min + (share_max - share_min) * phi) * time_limit
         if cands and el() + 1.3 * per > stop:
             break
         ts = time.monotonic()

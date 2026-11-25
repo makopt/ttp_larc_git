@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.spatial import cKDTree
 
+from . import ablation as AB
 from . import kernels as K
 from . import trace
 from .evaluator import city_weights, objective
@@ -47,12 +48,17 @@ def local_search(st: State, time_limit: float = 60.0, max_seg: int = 1000, slack
                  top_k: int = 5000, max_rounds: int = 1000, log=None, swaps: bool = True,
                  kp: int = 100, kq: int = 100, max_verify: int = 300, or_opt: bool = True, max_len: int = 3,
                  dist_slack: float = 1e18, compound: bool = False, tau_frac: float = 3.0, max_attempts: int = 2000,
-                 slice_moves: int = 500, reversal: bool = False, coord: bool = False, coord_passes: int = 40, coord_frac: float = 0.25,
+                 slice_moves: int = 500, reversal: bool = False, coord: bool = False, coord_passes: int = 40, coord_frac: float = None,
                  coord_screen: bool = True):        # first-pass screen of the coordinated 2-opt
     """Alternate tour moves (2-opt, Or-opt; items fixed) and item moves (flips, swaps; tour fixed) until no improvement
     or the time limit. Tour kernels run in slices of `slice_moves` moves with persistent don't-look bits, so the clock
     is checked often even on the largest instances. `compound` (2-opt + segment repack) is off by default: it copies
-    the full state per attempt and gave little gain."""
+    the full state per attempt and gave little gain. The damping coord_frac is 0.25 unless the variable LARC_COORD_FRAC
+    is set, and the switches of ablation.py can turn off the coordinated 2-opt and its first-pass screen."""
+    coord = coord and AB.COORD                      # switches of the ablation (ablation.py); no effect when unset
+    coord_screen = coord_screen and AB.SCREEN
+    if coord_frac is None:
+        coord_frac = AB.COORD_FRAC
     i = st.inst
     t0 = time.monotonic()
     deadline = t0 + time_limit
@@ -248,6 +254,8 @@ def macro_search(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, nbr: np.nd
         else:
             do_kick = False
         if do_kick:
+            t_k, v_k = time.monotonic(), best.value()
+            AB.STATS["kick_tries"] += 1
             s = State(inst, double_bridge(best.tour, rng, int(rng.integers(8, 61))), best.picked, nbr)
             local_search(s, time_limit=max(0.2, min(0.05 * time_limit, 0.2 * left())), coord=ls_coord)
             anneal(s, time_limit=max(0.0, min(anneal_s, left())), seed=seed + 2000 + k)
@@ -255,7 +263,15 @@ def macro_search(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, nbr: np.nd
             if s.value() > best.value() + 1e-9:
                 best = s
                 stats["kick_win"] += 1
+                AB.STATS["kick_wins"] += 1
+                AB.STATS["kick_gain"] += best.value() - v_k
+            AB.STATS["kick_time"] += time.monotonic() - t_k
             continue
+        if not AB.LHR:                                      # ablation: annealing of the incumbent instead of an LHR step
+            anneal(best, time_limit=min(anneal_s, left()), seed=seed + 1000 + k)
+            continue
+        t_l, v_l = time.monotonic(), best.value()
+        AB.STATS["lhr_tries"] += 1
         if q_mode == "bandit":                              # Thompson sampling on the success rate of each q
             qi = int(np.argmax(rng.beta(wins + 1.0, tries - wins + 1.0)))
         else:
@@ -268,6 +284,7 @@ def macro_search(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, nbr: np.nd
         else:
             cands = split_tours(inst, city_weights(inst, best.picked), q, seed=seed + k, time_limit=tl_sub)
         if not cands:
+            AB.STATS["lhr_time"] += time.monotonic() - t_l
             if k > 50:
                 break
             continue
@@ -288,6 +305,7 @@ def macro_search(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, nbr: np.nd
             if cand is None or s.value() > cand.value():
                 cand = s
         if cand is None:
+            AB.STATS["lhr_time"] += time.monotonic() - t_l
             break
         anneal(cand, time_limit=max(0.0, min(anneal_s, left())), seed=seed + k)
         stats["macro"] += 1
@@ -296,8 +314,11 @@ def macro_search(inst: LeanTTP, tour: np.ndarray, picked: np.ndarray, nbr: np.nd
             wins[qi] += 1
             best = cand
             stats["macro_win"] += 1
+            AB.STATS["lhr_wins"] += 1
+            AB.STATS["lhr_gain"] += best.value() - v_l
             if log:
                 log(f"t={time.monotonic()-t0:.0f}s macro {k} q={q}: new best {best.value():.1f}")
         elif left() > 1.0:                                   # intensify the incumbent with the same time
             anneal(best, time_limit=min(anneal_s, left()), seed=seed + 1000 + k)
+        AB.STATS["lhr_time"] += time.monotonic() - t_l
     return best, stats

@@ -1,0 +1,38 @@
+category,instance,method,previous_value,corrected_value,source_of_corrected_value,origin_of_previous_value
+A,a280_n279_bounded-strongly-corr_01,RWS,17723,17743,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,u724_n723_bounded-strongly-corr_01,RWS,49588,48794,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,dsj1000_n999_bounded-strongly-corr_01,S5,137631,137653,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","El Yafrani and Ahiod (2018), Table 5"
+A,dsj1000_n999_bounded-strongly-corr_01,RWS,141117,140656,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,rl1304_n1303_bounded-strongly-corr_01,RWS,76435,75206,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,d2103_n2102_bounded-strongly-corr_01,RWS,118652,118338,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,pcb3038_n3037_bounded-strongly-corr_01,RWS,149337,148973,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,rl11849_n11848_bounded-strongly-corr_01,MATLS,661349,661392,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)",typing error
+A,rl11849_n11848_bounded-strongly-corr_01,RWS,659283,653857,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,usa13509_n13508_bounded-strongly-corr_01,RWS,682238,677983,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,brd14051_n14050_bounded-strongly-corr_01,RWS,802188,798787,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,d15112_n15111_bounded-strongly-corr_01,RWS,868998,868019,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,d18512_n18511_bounded-strongly-corr_01,RWS,964518,962781,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+A,pla33810_n33809_bounded-strongly-corr_01,RWS,1781384,1781984,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,kroA100_n495_uncorr-similar-weights_05,RWS,41353,41258,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,ch130_n645_uncorr-similar-weights_05,S5,59333,58685,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","El Yafrani and Ahiod (2016), Table 3"
+B,ch130_n645_uncorr-similar-weights_05,RWS,58792,57964,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,u159_n790_uncorr-similar-weights_05,MATLS,58239,58289,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)",typing error
+B,u159_n790_uncorr-similar-weights_05,RWS,58966,58946,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,a280_n1395_uncorr-similar-weights_05,RWS,108378,107874,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,u574_n2865_uncorr-similar-weights_05,RWS,249368,247992,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,u724_n3615_uncorr-similar-weights_05,RWS,309750,304420,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,rl1304_n6515_uncorr-similar-weights_05,RWS,585600,590103,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,fl1577_n7880_uncorr-similar-weights_05,RWS,636424,635112,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,pcb3038_n15185_uncorr-similar-weights_05,RWS,1193737,1176520,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,fnl4461_n22300_uncorr-similar-weights_05,RWS,1628417,1624685,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,rl11849_n59240_uncorr-similar-weights_05,RWS,4729274,4729374,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)",typing error
+B,usa13509_n67540_uncorr-similar-weights_05,RWS,8115207,8022398,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,d15112_n75555_uncorr-similar-weights_05,RWS,7606876,7596136,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+B,d18512_n92555_uncorr-similar-weights_05,RWS,7580272,7507146,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+C,eil76_n750_uncorr_10,MATLS,88136,88115,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)",El Yafrani and Ahiod (2016) Table 4 and (2018) Table 7
+C,rl11849_n118480_uncorr_10,RWS,18504597,18422410,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+C,brd14051_n140500_uncorr_10,RWS,23907953,23809751,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+C,d18512_n185110_uncorr_10,MATLS,27164500,27164388,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)",El Yafrani and Ahiod (2016) Table 4 and (2018) Table 7
+C,d18512_n185110_uncorr_10,S5,27416163,27427144,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","El Yafrani and Ahiod (2016), Table 4"
+C,d18512_n185110_uncorr_10,RWS,27980877,27980876,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","Zhang et al. (2021), Table 4 (better of Solver1 and Solver2, a parameter study)"
+C,pla33810_n338090_uncorr_10,S5,57967446,57967586,"Zhang et al. (2021), Tables 1 to 3 (mean of 10 runs)","El Yafrani and Ahiod (2018), Table 7"

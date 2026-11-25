@@ -11,6 +11,8 @@ import math
 import numpy as np
 from numba import njit
 
+from .ablation import SECOND   # 1.0 in LARC; 0.0 drops the second-order term (ablation of the paper)
+
 
 @njit(cache=True, inline="always")
 def _d(xy, a, b):
@@ -163,7 +165,7 @@ def flip_pass(tour, pos, picked, cw, load, xy, profit, weight, city, capacity, w
         if v < vmin:
             v = vmin
         g1[s] = g1[s + 1] + d[s] / (v * v)
-        g2[s] = g2[s + 1] + d[s] / (v * v * v)
+        g2[s] = g2[s + 1] + SECOND * d[s] / (v * v * v)
     approx = np.empty(m)
     for j in range(m):
         k = pos[city[j]]
@@ -235,7 +237,7 @@ def swap_pass(tour, pos, picked, cw, load, xy, profit, weight, city, capacity, w
         if v < vmin:
             v = vmin
         g1[s] = g1[s + 1] + d[s] / (v * v)
-        g2[s] = g2[s + 1] + d[s] / (v * v * v)
+        g2[s] = g2[s + 1] + SECOND * d[s] / (v * v * v)
     gain_add = np.full(m, -1e300)
     gain_rem = np.full(m, -1e300)
     for j in range(m):
@@ -443,7 +445,7 @@ def flip_local(cities, ncities, tour, pos, picked, cw, load, xy, profit, weight,
         if v < vmin:
             v = vmin
         g1[s] = g1[s + 1] + d[s] / (v * v)
-        g2[s] = g2[s + 1] + d[s] / (v * v * v)
+        g2[s] = g2[s + 1] + SECOND * d[s] / (v * v * v)
     dp = 0.0
     for u in range(ncities):
         c = cities[u]
@@ -789,7 +791,7 @@ def _suffix_sums(tour, load, xy, vmax, vmin, nu, g1s, g2s, esuf):
         d = _d(xy, tour[s], tour[(s + 1) % n])
         iv = _inv_v(load[s], vmax, vmin, nu)
         g1s[s] = g1s[s + 1] + d * iv * iv
-        g2s[s] = g2s[s + 1] + d * iv * iv * iv
+        g2s[s] = g2s[s + 1] + SECOND * d * iv * iv * iv
         esuf[s] = esuf[s + 1] + d * iv
 
 
@@ -908,7 +910,7 @@ def coord_two_opt_ls(tour, pos, picked, cw, load, et, xy, nbr, profit, weight, c
                         for q in range(L - 1, -1, -1):
                             iv = _inv_v(nlx[q], vmax, vmin, nu)
                             G1[q] = G1[q + 1] + dn[q] * iv * iv
-                            G2[q] = G2[q + 1] + dn[q] * iv * iv * iv
+                            G2[q] = G2[q + 1] + SECOND * dn[q] * iv * iv * iv
                         npos = 0
                         sum_pos = 0.0
                         for e in range(ns):

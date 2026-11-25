@@ -1,9 +1,11 @@
-"""Statistical figures of the paper (Figures 7 to 10 and 12 to 17), drawn from the workbooks of results/ and the
-published values of data/published_values.xlsx only. The schematic figures are drawn in TikZ in the LaTeX source.
+"""Statistical figures of the paper (Figures 7 to 10 and 12 to 16), and the ranking of the nine published methods
+without LARC, which is given in the repository only, drawn from the workbooks of results/ and the published values of
+data/published_values.xlsx only. The schematic figures are drawn in TikZ in the LaTeX source.
 Usage: python3 scripts/analysis/make_figures.py [out_dir]   (default: figures/)
 Each figure is written as PDF and PNG. Light pastel colours, one meaning per colour in every figure, and
 Friedman-Nemenyi critical-difference diagrams."""
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -70,12 +72,12 @@ METHOD_COLOR = {"LARC": LARC_C, "CoCo+": COCO_C}
 FILE_NAMES = {"fig_repack": "figure07_repack_passes", "fig_lhr": "figure08_light_heavy_move",
               "fig_probe": "figure09_probe_screening", "fig_timeline": "figure10_budget_split",
               "fig_a12": "figure12_A12_and_outcomes", "fig_gap": "figure13_gap_to_CoCoPlus",
-              "fig_ranks9": "figure14_ranks_published_methods", "fig_ranks": "figure15_ranks_with_LARC",
-              "fig_conv": "figure16_convergence", "fig_sens": "figure17_sensitivity_sampling_shares"}
+              "fig_ranks9": "ranks_published_methods_without_LARC", "fig_ranks": "figure14_ranks_with_LARC",
+              "fig_conv": "figure15_convergence", "fig_sens": "figure16_sensitivity_sampling_shares"}
 
 
 def save(fig, name):
-    """Writes the figure as PDF and PNG, under the number it has in the paper."""
+    """Writes the figure as PDF and PNG, under the number it has in the paper (the ranking without LARC has none)."""
     name = FILE_NAMES[name]
     for ext in ("pdf", "png"):
         fig.savefig(OUT / f"{name}.{ext}")
@@ -195,7 +197,7 @@ def fig_timeline():
         if n > 1500:
             txt = f"{int(r.candidates)} candidates, probe of {min(10, max(0.5, 2.5e-4 * n)):.1f} s each"
         else:
-            txt = f"{int(r.candidates):,} candidates, perturbed tours, $\\rho={r.converged:.2f}$"
+            txt = f"{int(r.candidates):,} candidates, perturbed tours, $\\phi={r.converged:.2f}$"
         ax.text(5, y, txt, fontsize=7.2, va="center", color="#333333")
         ax.text(r.sample_s, y + 0.36, f"{r.sample_s:.0f} s", fontsize=6.8, ha="center", va="bottom", color=INK)
     for x, l, ha in [(270, "$0.45T$", "center"), (450, "$0.75T$", "right"), (480, "$0.8T$", "left")]:
@@ -461,28 +463,56 @@ def fig_ranks():
 
 # ---------------------------------------------------------------------------- 8. probe screening (d2103, 320 tours)
 def fig_probe():
+    """(a, b) the 320 candidates of the probe on d2103 with five items per city; (c) the rank correlations of the
+    constructor value and of the probe value with the value after the longer search, on each of the 33 instances with
+    more than 1,500 cities (results/probe_screening_large.xlsx, as in scripts/analysis/probe_screening_large.py)."""
     d = sheet("method_experiments", "probe_screening").rename(columns={
         "constructor_value": "built", "value_after_first_probe": "ls05", "value_after_second_probe": "ls2"})
     d = d[d.instance == "d2103_n10510_uncorr-similar-weights_05"].reset_index(drop=True)
     top = d.nlargest(10, "ls2").index
-    fig, axs = plt.subplots(1, 2, figsize=(W, 2.7), gridspec_kw={"wspace": 0.3})
-    for ax, (col, lab) in zip(axs, [("built", "(a)"), ("ls05", "(b)")]):
+    fig, axs = plt.subplots(1, 3, figsize=(W, 2.55), gridspec_kw={"wspace": 0.42})
+    for ax, (col, lab) in zip(axs[:2], [("built", "(a)"), ("ls05", "(b)")]):
         rho = spearmanr(d[col], d.ls2).statistic
         kept = d.nlargest(32, col).index
         ax.axvspan(d.loc[kept, col].min() / 1e3, d[col].max() / 1e3 + 3, color=TAN_L, alpha=0.6, lw=0.0)
-        ax.scatter(d[col] / 1e3, d.ls2 / 1e3, s=9, color=LAV_L, edgecolor=LAV, lw=0.5, zorder=2)
-        ax.scatter(d.loc[top, col] / 1e3, d.loc[top, "ls2"] / 1e3, s=22, color=CORAL, edgecolor=CORAL_D, lw=0.6,
+        ax.scatter(d[col] / 1e3, d.ls2 / 1e3, s=7, color=LAV_L, edgecolor=LAV, lw=0.5, zorder=2)
+        ax.scatter(d.loc[top, col] / 1e3, d.loc[top, "ls2"] / 1e3, s=18, color=CORAL, edgecolor=CORAL_D, lw=0.6,
                    zorder=3, label="10 best after 2 s")
         n_in = len(set(kept) & set(top))
-        ax.text(0.97, 0.04, f"Spearman $\\rho_s$ = {rho:.2f}\n32 best kept {n_in} of the 10", transform=ax.transAxes,
-                va="bottom", ha="right", fontsize=7.4, color="#333333",
+        ax.text(0.97, 0.04, f"$\\rho_s$ = {rho:.2f}\n32 best kept\n{n_in} of the 10", transform=ax.transAxes,
+                va="bottom", ha="right", fontsize=6.8, color="#333333",
                 bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#CCCCCC", lw=0.6))
         panel(ax, lab)
-        ax.set_xlabel(f"{'constructor value' if col == 'built' else 'value after a 0.5 s probe'} ($\\times 10^3$)")
-        ax.set_ylabel("value after 2 s of search ($\\times 10^3$)")
-    axs[0].legend(handles=[Line2D([], [], marker="o", ls="", color=CORAL, label="10 best after 2 s"),
-                           Patch(color=TAN_L, label="32 best by the horizontal value")],
-                  loc="upper center", bbox_to_anchor=(1.15, -0.2), ncol=2, fontsize=7.2)
+        ax.set_xlabel(f"{'constructor value' if col == 'built' else 'value after 0.5 s'} ($\\times 10^3$)")
+        ax.set_ylabel("value after 2 s ($\\times 10^3$)")
+    t = pd.read_excel(RES / "probe_screening_large.xlsx", sheet_name="traces")
+    rows = []
+    for inst, g in t.groupby("instance"):
+        n_c, n_i = (int(x) for x in re.match(r"^[A-Za-z]+(\d+)_n(\d+)_", inst).groups())
+        rows.append(dict(cat={1: "A", 5: "B", 10: "C"}[round(n_i / (n_c - 1))],
+                         rc=spearmanr(g.constructor_value, g.value_after_longer_search).statistic,
+                         rp=spearmanr(g.value_after_probe, g.value_after_longer_search).statistic))
+    r = pd.DataFrame(rows)
+    cx = axs[2]
+    lo = min(r.rc.min(), r.rp.min()) - 0.05
+    cx.plot([lo, 1.02], [lo, 1.02], color=MUTED, lw=0.7, ls="--", zorder=1)
+    for c in "ABC":
+        g = r[r.cat == c]
+        cx.scatter(g.rc, g.rp, s=16, marker=CAT_MARK[c], color=CAT_COLOR[c], edgecolor="#555555", lw=0.5, zorder=2,
+                   label=f"category {c} ({len(g)})")
+    cx.set_xlim(lo, 1.02); cx.set_ylim(lo, 1.02)
+    cx.text(0.97, 0.04, f"probe better on\n{int((r.rp > r.rc).sum())} of {len(r)} instances", transform=cx.transAxes,
+            va="bottom", ha="right", fontsize=6.8, color="#333333",
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#CCCCCC", lw=0.6))
+    panel(cx, "(c)")
+    cx.set_xlabel("$\\rho_s$ of the constructor value")
+    cx.set_ylabel("$\\rho_s$ of the probe value")
+    h = [Line2D([], [], marker="o", ls="", color=CORAL, markeredgecolor=CORAL_D, label="10 best after 2 s"),
+         Patch(color=TAN_L, label="32 best by the horizontal value")]
+    h += [Line2D([], [], marker=CAT_MARK[c], ls="", color=CAT_COLOR[c], markeredgecolor="#555555",
+                 label=f"category {c}") for c in "ABC"]
+    fig.legend(handles=h, loc="upper center", bbox_to_anchor=(0.5, -0.07), ncol=5, fontsize=6.8, columnspacing=1.0,
+               handletextpad=0.3)
     save(fig, "fig_probe")
 
 

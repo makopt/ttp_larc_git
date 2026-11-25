@@ -1,10 +1,11 @@
-"""Access to the 60 instances of the categorized benchmark and to the published values of the nine methods."""
+"""Access to the 60 instances of the categorized benchmark, to the 60 held-out instances and to the published values of
+the nine methods."""
 from functools import lru_cache
 from typing import Dict, List
 
 import pandas as pd
 
-from . import INSTANCE_LIST, PUBLISHED_VALUES, REPO_ROOT
+from . import DATA_DIR, INSTANCE_LIST, PUBLISHED_VALUES, REPO_ROOT, RESULTS_DIR
 
 METHODS = ["CoCo+", "SAVI", "RWS", "CoCo", "CS2SA*", "CS2SA", "MA2B", "S5", "MATLS"]
 
@@ -23,10 +24,26 @@ def instance_names() -> List[str]:
     return list(_instances().instance)
 
 
+@lru_cache(maxsize=1)
+def _heldout() -> pd.DataFrame:
+    df = pd.read_excel(RESULTS_DIR / "heldout_LARC_vs_CoCoPlus.xlsx", sheet_name="instances")
+    df["path"] = [str((DATA_DIR / "instances_heldout" / f"{b}-ttp" / f"{n}.json").relative_to(REPO_ROOT))
+                  for n, b in zip(df.instance, df.tsp_base)]
+    return df
+
+
+def heldout_list() -> List[Dict]:
+    """One dictionary per held-out instance: name, the categorized instance it was drawn for, size, path of the JSON file
+    (created by scripts/setup/prepare_heldout_instances.py)."""
+    return _heldout().to_dict("records")
+
+
 def load_instance(name: str):
-    """The instance as arrays (class LeanTTP of larc.instance), from its JSON file."""
+    """The instance as arrays (class LeanTTP of larc.instance), from its JSON file. The name is one of the 60 instances
+    of the categorized benchmark or one of the 60 held-out instances."""
     from .instance import load_lean
-    row = _instances().set_index("instance").loc[name]
+    cat = _instances().set_index("instance")
+    row = cat.loc[name] if name in cat.index else _heldout().set_index("instance").loc[name]
     return load_lean(REPO_ROOT / row["path"])
 
 
